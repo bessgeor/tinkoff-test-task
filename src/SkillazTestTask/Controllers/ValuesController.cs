@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SkillazTestTask.Controllers
 {
-	[Route("api/[controller]")]
+	[Route( "api/[controller]" )]
 	public class ValuesController : Controller
 	{
 		// GET: api/values
@@ -14,8 +14,8 @@ namespace SkillazTestTask.Controllers
 		}
 
 		// GET api/values/5
-		[HttpGet("{id}")]
-		public string Get(int id)
+		[HttpGet( "{id}" )]
+		public string Get( int id )
 		{
 			return "value";
 		}
