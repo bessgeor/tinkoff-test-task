@@ -16,20 +16,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.0.0" />
+    <PackageReference Include="MongoDb.Driver" Version="2.4.4" />
   </ItemGroup>
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="2.0.0" />
   </ItemGroup>
-
-  <Target Name="PrePublishTarget" BeforeTargets="PrepareForPublish">
-    <Exec Command="npm install" />
-    <Exec Command="npm run build" />
-    <ItemGroup>
-      <_GeneratedFiles Include="$(GeneratedItemPatterns)" />
-      <ContentWithTargetPath Include="@(_GeneratedFiles->'%(FullPath)')" RelativePath="%(_GeneratedFiles.Identity)" TargetPath="%(_GeneratedFiles.Identity)" CopyToPublishDirectory="PreserveNewest" />
-      <Dist Include="../../build/**" />
-    </ItemGroup>
-    <Copy SourceFiles="@(Dist)" DestinationFolder="$(PublishDir)\wwwroot\%(RecursiveDir)" SkipUnchangedFiles="true" />
-  </Target>
 </Project>

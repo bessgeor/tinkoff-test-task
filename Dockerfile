@@ -8,4 +8,4 @@ RUN dotnet publish --output /app/ --configuration Release
 FROM microsoft/aspnetcore
 WORKDIR /app
 COPY --from=builder /app .
-ENTRYPOINT ["dotnet", "AspNetCoreDemoApp.dll"]
+ENTRYPOINT ["dotnet", "SkillazTestTask.dll"]
