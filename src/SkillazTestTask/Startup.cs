@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AspNetCoreDemoApp
+namespace SkillazTestTask
 {
     public class Startup
     {
