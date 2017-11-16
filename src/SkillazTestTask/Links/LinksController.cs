@@ -6,6 +6,7 @@ using SkillazTestTask.Utils.MongoRelatedExtensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using static SkillazTestTask.Links.Models.ShortenedLinkModel;
 
 namespace SkillazTestTask.Links
 {
@@ -46,6 +47,41 @@ namespace SkillazTestTask.Links
 					await _links.InsertOneAsync( model, _insertOptions, source.Token ).ConfigureAwait( false );
 				
 				return model.Key;
+			}
+		}
+
+		[HttpGet( "f/{key}")]
+		public Task Decompress( string key )
+		{
+			long id = LinkConverter.RegenerateId( key );
+
+			return DecompressInternal(); // possible (if regeneration throws) async state machine allocation avoidance
+
+			async Task DecompressInternal()
+			{
+				string link;
+				using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
+					link = await _links
+					.FindOneAndUpdateAsync
+					(
+						m => m.Id == id,
+						new UpdateDefinitionBuilder<ShortenedLinkModel>()
+							.AddToSet( m => m.Follows, new Follow { IP = HttpContext.Connection.RemoteIpAddress.ToString() } ),
+						new FindOneAndUpdateOptions<ShortenedLinkModel, string>()
+						{
+							Projection = new ProjectionDefinitionBuilder<ShortenedLinkModel>().Expression( m => m.Value )
+						},
+						source.Token
+					).ConfigureAwait( false );
+
+				if ( link is null )
+				{
+					Response.StatusCode = 404;
+					return;
+				}
+
+				Response.StatusCode = 302;
+				Response.Headers.Add( "Location", link );
 			}
 		}
 	}
