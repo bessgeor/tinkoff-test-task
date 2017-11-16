@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <GeneratedItemPatterns>wwwroot/**</GeneratedItemPatterns>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(GeneratedItemPatterns)</DefaultItemExcludes>
+	<LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
