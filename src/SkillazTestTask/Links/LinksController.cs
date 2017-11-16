@@ -4,6 +4,7 @@ using SkillazTestTask.Links.Models;
 using SkillazTestTask.Sequences;
 using SkillazTestTask.Utils.MongoRelatedExtensions;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using static SkillazTestTask.Links.Models.ShortenedLinkModel;
@@ -82,6 +83,22 @@ namespace SkillazTestTask.Links
 
 				Response.StatusCode = 302;
 				Response.Headers.Add( "Location", link );
+			}
+		}
+
+		[HttpGet( "list" )]
+		public async Task<ShortenedLinkModel[]> List( int from, int count )
+		{
+			using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
+			using ( IAsyncCursor<ShortenedLinkModel> cursor = await _links
+				.FindAsync( m => true,
+				new FindOptions<ShortenedLinkModel>()
+				{ Skip = from, Limit = count, BatchSize = count },
+				source.Token ).ConfigureAwait( false ) )
+			{
+				using ( CancellationTokenSource sourceInner = new CancellationTokenSource( _defaultTimeout ) )
+					await cursor.MoveNextAsync( sourceInner.Token ).ConfigureAwait( false );
+				return cursor.Current.ToArray();
 			}
 		}
 	}
