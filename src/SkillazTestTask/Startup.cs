@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
+using SkillazTestTask.Sequences;
 using System;
 
 namespace SkillazTestTask
@@ -16,6 +17,10 @@ namespace SkillazTestTask
 			IMongoClient client = new MongoClient( url );
 			IMongoDatabase database = client.GetDatabase( "heroku_8pg0s8ql" );
 			services.AddSingleton( database );
+
+			Sequence links = new Sequence { Id = "linksSequence" };
+			links.EnsureCreated( database ).GetAwaiter().GetResult();
+			services.AddSingleton( links );
 		}
 
 		public void Configure( IApplicationBuilder app, IHostingEnvironment env )
