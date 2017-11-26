@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using TinkoffTestTask.Sequences;
 using System;
+using TinkoffTestTask.Utils;
 
 namespace TinkoffTestTask
 {
@@ -17,6 +18,8 @@ namespace TinkoffTestTask
 			IMongoClient client = new MongoClient( url );
 			IMongoDatabase database = client.GetDatabase( "heroku_kq19rxxj" );
 			services.AddSingleton( database );
+
+			services.AddSingleton( new DecBase68Converter() );
 
 			services.AddSingleton<ISequenceProvider>( dic => new SequenceProvider( dic.GetRequiredService<IMongoDatabase>() ) );
 		}

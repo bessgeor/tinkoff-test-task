@@ -4,13 +4,13 @@ using System.Text;
 
 namespace TinkoffTestTask.Utils
 {
-	public static class DecBase68Converter
+	public class DecBase68Converter
 	{
 		private static readonly char[] _alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!$^*-_+".ToCharArray();
 		private static readonly Dictionary<char, long> _alphabetInversion = _alphabet.Select( ( c, i ) => (c, i) ).ToDictionary( t => t.c, t => (long) t.i );
 		private static readonly long _alphabetPower = _alphabet.Length; // long to avoid casts
 
-		public static string GenerateKey( long @for )
+		public string GenerateKey( long @for )
 		{
 			StringBuilder sb = new StringBuilder( 4 );
 			unchecked // optimize out overflow checking
@@ -25,7 +25,7 @@ namespace TinkoffTestTask.Utils
 			return sb.ToString();
 		}
 
-		public static long RegenerateId( string @from )
+		public long RegenerateId( string @from )
 		{
 			long value = 0;
 			unchecked // optimize out overflow checking

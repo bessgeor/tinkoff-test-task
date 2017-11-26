@@ -17,10 +17,15 @@ namespace TinkoffTestTask.Links
 		private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds( 1.5d );
 
 		private readonly IMongoCollection<ShortenedLinkModel> _links;
+		private readonly DecBase68Converter _converter;
 		private readonly Sequence _linkIdSequence;
 
-		public LinksController( IMongoDatabase db, ISequenceProvider provider )
-			=> (_links, _linkIdSequence) = (db.GetCollection<ShortenedLinkModel>( "ShortenedLinks" ), provider.GetSequenceAsync( "linksSequence" ).GetAwaiter().GetResult());
+		public LinksController( IMongoDatabase db, ISequenceProvider provider, DecBase68Converter converter )
+		{
+			_links = db.GetCollection<ShortenedLinkModel>( "ShortenedLinks" );
+			_linkIdSequence = provider.GetSequenceAsync( "linksSequence" ).GetAwaiter().GetResult();
+			_converter = converter;
+		}
 
 		// should be PUT probably, but GET is much easer to test
 		[HttpGet( "compress/{*url}" )]
@@ -41,7 +46,7 @@ namespace TinkoffTestTask.Links
 					Sequence seq = await _linkIdSequence.GetNextSequenceValue( _links.Database, source.Token ).ConfigureAwait( false );
 					newlyGeneratedId = seq.Value;
 				}
-				string key = DecBase68Converter.GenerateKey( newlyGeneratedId );
+				string key = _converter.GenerateKey( newlyGeneratedId );
 				ShortenedLinkModel model = new ShortenedLinkModel { Id = newlyGeneratedId, Key = key, Value = url };
 				
 				using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
@@ -54,7 +59,7 @@ namespace TinkoffTestTask.Links
 		[HttpGet( "f/{key}")]
 		public Task Decompress( string key )
 		{
-			long id = DecBase68Converter.RegenerateId( key );
+			long id = _converter.RegenerateId( key );
 
 			return DecompressInternal(); // possible (if regeneration throws) async state machine allocation avoidance
 
