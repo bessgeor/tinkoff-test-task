@@ -19,8 +19,8 @@ namespace TinkoffTestTask.Links
 		private readonly IMongoCollection<ShortenedLinkModel> _links;
 		private readonly Sequence _linkIdSequence;
 
-		public LinksController( IMongoDatabase db, Sequence linksSequence )
-			=> (_links, _linkIdSequence) = (db.GetCollection<ShortenedLinkModel>( "ShortenedLinks" ), linksSequence);
+		public LinksController( IMongoDatabase db, ISequenceProvider provider )
+			=> (_links, _linkIdSequence) = (db.GetCollection<ShortenedLinkModel>( "ShortenedLinks" ), provider.GetSequenceAsync( "linksSequence" ).GetAwaiter().GetResult());
 
 		// should be PUT probably, but GET is much easer to test
 		[HttpGet( "compress/{*url}" )]

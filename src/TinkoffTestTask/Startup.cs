@@ -18,9 +18,7 @@ namespace TinkoffTestTask
 			IMongoDatabase database = client.GetDatabase( "heroku_kq19rxxj" );
 			services.AddSingleton( database );
 
-			Sequence links = new Sequence { Id = "linksSequence" };
-			links.EnsureCreated( database ).GetAwaiter().GetResult();
-			services.AddSingleton( links );
+			services.AddSingleton<ISequenceProvider>( dic => new SequenceProvider( dic.GetRequiredService<IMongoDatabase>() ) );
 		}
 
 		public void Configure( IApplicationBuilder app, IHostingEnvironment env )
