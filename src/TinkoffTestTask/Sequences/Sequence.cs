@@ -15,7 +15,7 @@ namespace TinkoffTestTask.Sequences
 			=> _db = db;
 
 		public string Id { get; set; }
-		public long Value { get; set; }
+		public long Value { get; set; } = -1;
 
 		public async Task EnsureCreated()
 		{
