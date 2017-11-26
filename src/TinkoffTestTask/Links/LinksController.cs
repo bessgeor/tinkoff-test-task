@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using TinkoffTestTask.Links.Models;
 using TinkoffTestTask.Sequences;
 using TinkoffTestTask.Utils;
+using TinkoffTestTask.Auth;
 using System;
 using System.Linq;
 using System.Threading;
@@ -18,13 +19,15 @@ namespace TinkoffTestTask.Links
 
 		private readonly IMongoCollection<ShortenedLinkModel> _links;
 		private readonly DecBase68Converter _converter;
+		private readonly IAuthTokenProvider _authTokenProvider;
 		private readonly Sequence _linkIdSequence;
 
-		public LinksController( IMongoDatabase db, ISequenceProvider provider, DecBase68Converter converter )
+		public LinksController( IMongoDatabase db, ISequenceProvider provider, DecBase68Converter converter, IAuthTokenProvider authTokenProvider )
 		{
 			_links = db.GetCollection<ShortenedLinkModel>( "ShortenedLinks" );
 			_linkIdSequence = provider.GetSequenceAsync( "linksSequence" ).GetAwaiter().GetResult();
 			_converter = converter;
+			_authTokenProvider = authTokenProvider;
 		}
 
 		// should be PUT probably, but GET is much easer to test

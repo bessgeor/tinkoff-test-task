@@ -5,6 +5,7 @@ using MongoDB.Driver;
 using TinkoffTestTask.Sequences;
 using System;
 using TinkoffTestTask.Utils;
+using TinkoffTestTask.Auth;
 
 namespace TinkoffTestTask
 {
@@ -22,6 +23,8 @@ namespace TinkoffTestTask
 			services.AddSingleton( new DecBase68Converter() );
 
 			services.AddSingleton<ISequenceProvider>( dic => new SequenceProvider( dic.GetRequiredService<IMongoDatabase>() ) );
+
+			services.AddSingleton<IAuthTokenProvider>( dic => new AuthTokenProvider( dic.GetRequiredService<ISequenceProvider>(), dic.GetRequiredService<DecBase68Converter>() ) );
 		}
 
 		public void Configure( IApplicationBuilder app, IHostingEnvironment env )
