@@ -101,22 +101,38 @@ namespace TinkoffTestTask.Links
 		}
 
 		[HttpGet( "list" )]
-		public async Task<ShortenedLinkModel[]> List( int from, int count )
+		public async Task<ShortenedLinkViewModel[]> List( int from, int count )
 		{
 			string userKey = await _authTokenProvider.GetTokenAsync( HttpContext, createIfNotExists: false ).ConfigureAwait( false );
 			if ( userKey is null )
-				return Array.Empty<ShortenedLinkModel>();
+				return Array.Empty<ShortenedLinkViewModel>();
 
 			long userId = _converter.RegenerateId( userKey );
 
 			using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
-			using ( IAsyncCursor<ShortenedLinkModel> cursor = await _links
+			using ( IAsyncCursor<ShortenedLinkViewModel> cursor = await _links
 				.FindAsync
 				(
-					m => m.Id.UserId == userId,
-					new FindOptions<ShortenedLinkModel> { Skip = from, Limit = count, BatchSize = count },
+					Builders<ShortenedLinkModel>.Filter.Where( m => m.Id.UserId == userId ),
+					new FindOptions<ShortenedLinkModel, ShortenedLinkViewModel>
+					{
+						Skip = from,
+						Limit = count,
+						BatchSize = count,
+						Projection = Builders<ShortenedLinkModel>.Projection.Expression
+						(
+							m => new ShortenedLinkViewModel
+							{
+								Key = m.Key,
+								Value = m.Value,
+								CreatedAt = m.CreatedAt,
+								FollowCount = m.Follows.Count()
+							}
+						)
+					},
 					source.Token
-				).ConfigureAwait( false ) )
+				)
+				.ConfigureAwait( false ) )
 			{
 				using ( CancellationTokenSource sourceInner = new CancellationTokenSource( _defaultTimeout ) )
 					await cursor.MoveNextAsync( sourceInner.Token ).ConfigureAwait( false );
