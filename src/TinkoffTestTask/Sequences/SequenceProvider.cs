@@ -14,14 +14,14 @@ namespace TinkoffTestTask.Sequences
 			=> _db = db;
 
 		public Task<Sequence> GetSequenceAsync( string name )
-			=> _sequenceCache.TryGetValue( name, out Sequence seq ) // is cheaper than db query and async state machine allocation
+			=> _sequenceCache.TryGetValue( name, out Sequence seq ) // is cheaper than db query and async state machine and lambda allocation
 			? Task.FromResult( seq )
 			: CreateSequence( name );
 
 		private async Task<Sequence> CreateSequence( string name )
 		{
-			Sequence seq = _sequenceCache.GetOrAdd( name, nameInFactory => new Sequence { Id = nameInFactory } );
-			await seq.EnsureCreated( _db ).ConfigureAwait( false );
+			Sequence seq = _sequenceCache.GetOrAdd( name, nameInFactory => new Sequence( _db ) { Id = nameInFactory } );
+			await seq.EnsureCreated().ConfigureAwait( false );
 			return seq;
 		}
     }

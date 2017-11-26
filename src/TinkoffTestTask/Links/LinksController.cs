@@ -43,7 +43,7 @@ namespace TinkoffTestTask.Links
 				long newlyGeneratedId;
 				using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
 				{
-					Sequence seq = await _linkIdSequence.GetNextSequenceValue( _links.Database, source.Token ).ConfigureAwait( false );
+					Sequence seq = await _linkIdSequence.GetNextSequenceValue( source.Token ).ConfigureAwait( false );
 					newlyGeneratedId = seq.Value;
 				}
 				string key = _converter.GenerateKey( newlyGeneratedId );

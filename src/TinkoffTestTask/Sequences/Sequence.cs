@@ -9,16 +9,20 @@ namespace TinkoffTestTask.Sequences
 	public class Sequence
     {
 		private const string _collectionName = "sequences";
+		private readonly IMongoDatabase _db;
+
+		public Sequence( IMongoDatabase db )
+			=> _db = db;
 
 		public string Id { get; set; }
 		public long Value { get; set; }
 
-		public async Task EnsureCreated( IMongoDatabase db )
+		public async Task EnsureCreated()
 		{
 			try
 			{
 				using ( CancellationTokenSource source = new CancellationTokenSource( TimeSpan.FromSeconds( 3.0d ) ) )
-					await db.GetCollection<Sequence>( _collectionName ).InsertOneAsync( this, new InsertOneOptions { BypassDocumentValidation = false }, source.Token ).ConfigureAwait( false );
+					await _db.GetCollection<Sequence>( _collectionName ).InsertOneAsync( this, new InsertOneOptions { BypassDocumentValidation = false }, source.Token ).ConfigureAwait( false );
 			}
 			catch( MongoWriteException e ) when ( e.MeansDuplicateKey() )
 			{
@@ -26,8 +30,8 @@ namespace TinkoffTestTask.Sequences
 			}
 		}
 
-		public Task<Sequence> GetNextSequenceValue( IMongoDatabase db, CancellationToken token )
-			=> db.GetCollection<Sequence>( _collectionName )
+		public Task<Sequence> GetNextSequenceValue( CancellationToken token )
+			=> _db.GetCollection<Sequence>( _collectionName )
 			.FindOneAndUpdateAsync<Sequence>
 			(
 				s => s.Id == Id,
