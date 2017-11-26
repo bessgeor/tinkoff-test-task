@@ -43,14 +43,16 @@ namespace TinkoffTestTask.Links
 
 			async Task<string> CompressInternal()
 			{
-				long newlyGeneratedId;
+				long newlyGeneratedLinkId;
 				using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
 				{
 					Sequence seq = await _linkIdSequence.GetNextSequenceValue( source.Token ).ConfigureAwait( false );
-					newlyGeneratedId = seq.Value;
+					newlyGeneratedLinkId = seq.Value;
 				}
-				string key = _converter.GenerateKey( newlyGeneratedId );
-				ShortenedLinkModel model = new ShortenedLinkModel { Id = newlyGeneratedId, Key = key, Value = url };
+				string userKey = await _authTokenProvider.GetTokenAsync( HttpContext, createIfNotExists: true ).ConfigureAwait( false );
+				string key = String.Concat( userKey, "~", _converter.GenerateKey( newlyGeneratedLinkId ) );
+				long userId = _converter.RegenerateId( userKey );
+				ShortenedLinkModel model = new ShortenedLinkModel { Id = new ShortenedLinkModelId { LinkId = newlyGeneratedLinkId, UserId = userId }, Key = key, Value = url };
 				
 				using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
 					await _links.InsertOneAsync( model, _insertOptions, source.Token ).ConfigureAwait( false );
@@ -59,10 +61,12 @@ namespace TinkoffTestTask.Links
 			}
 		}
 
-		[HttpGet( "f/{key}")]
-		public Task Decompress( string key )
+		[HttpGet( "f/{userKey}~{linkKey}")]
+		public Task Decompress( string userKey, string linkKey )
 		{
-			long id = _converter.RegenerateId( key );
+			long userId = _converter.RegenerateId( userKey );
+			long linkId = _converter.RegenerateId( linkKey );
+			ShortenedLinkModelId id = new ShortenedLinkModelId { UserId = userId, LinkId = linkId };
 
 			return DecompressInternal(); // possible (if regeneration throws) async state machine allocation avoidance
 
@@ -97,11 +101,17 @@ namespace TinkoffTestTask.Links
 		[HttpGet( "list" )]
 		public async Task<ShortenedLinkModel[]> List( int from, int count )
 		{
+			string userKey = await _authTokenProvider.GetTokenAsync( HttpContext, createIfNotExists: false ).ConfigureAwait( false );
+			if ( userKey is null )
+				return Array.Empty<ShortenedLinkModel>();
+
+			long userId = _converter.RegenerateId( userKey );
+
 			using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
 			using ( IAsyncCursor<ShortenedLinkModel> cursor = await _links
 				.FindAsync
 				(
-					m => true,
+					m => m.Id.UserId == userId,
 					new FindOptions<ShortenedLinkModel> { Skip = from, Limit = count, BatchSize = count },
 					source.Token
 				).ConfigureAwait( false ) )

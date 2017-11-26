@@ -5,7 +5,7 @@ namespace TinkoffTestTask.Links.Models
 {
 	public class ShortenedLinkModel
 	{
-		public long Id { get; set; }
+		public ShortenedLinkModelId Id { get; set; }
 		public string Key { get; set; }
 		public string Value { get; set; }
 		public IEnumerable<Follow> Follows { get; set; } = Array.Empty<Follow>();
@@ -13,6 +13,12 @@ namespace TinkoffTestTask.Links.Models
 		public class Follow
 		{
 			public string IP { get; set; }
+		}
+
+		public class ShortenedLinkModelId
+		{
+			public long UserId { get; set; }
+			public long LinkId { get; set; }
 		}
 	}
 }
