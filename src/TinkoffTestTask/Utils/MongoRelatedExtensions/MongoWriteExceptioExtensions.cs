@@ -1,6 +1,6 @@
 using MongoDB.Driver;
 
-namespace SkillazTestTask.Utils.MongoRelatedExtensions
+namespace TinkoffTestTask.Utils.MongoRelatedExtensions
 {
 	public static class MongoWriteExceptioExtensions
 	{

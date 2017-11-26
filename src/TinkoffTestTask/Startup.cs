@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
-using SkillazTestTask.Sequences;
+using TinkoffTestTask.Sequences;
 using System;
 
-namespace SkillazTestTask
+namespace TinkoffTestTask
 {
 	public class Startup
 	{

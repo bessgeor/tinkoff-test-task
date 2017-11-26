@@ -1,10 +1,10 @@
 using MongoDB.Driver;
-using SkillazTestTask.Utils.MongoRelatedExtensions;
+using TinkoffTestTask.Utils.MongoRelatedExtensions;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SkillazTestTask.Sequences
+namespace TinkoffTestTask.Sequences
 {
 	public class Sequence
     {
