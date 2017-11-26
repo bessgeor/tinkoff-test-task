@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
-using SkillazTestTask.Sequences;
+using TinkoffTestTask.Sequences;
 using System;
 
-namespace SkillazTestTask
+namespace TinkoffTestTask
 {
 	public class Startup
 	{
@@ -15,7 +15,7 @@ namespace SkillazTestTask
 			services.AddMvc();
 			MongoUrl url = new MongoUrl( Environment.GetEnvironmentVariable( "MONGODB_URI" ) );
 			IMongoClient client = new MongoClient( url );
-			IMongoDatabase database = client.GetDatabase( "heroku_8pg0s8ql" );
+			IMongoDatabase database = client.GetDatabase( "heroku_kq19rxxj" );
 			services.AddSingleton( database );
 
 			Sequence links = new Sequence { Id = "linksSequence" };

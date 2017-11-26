@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SkillazTestTask.Links
+namespace TinkoffTestTask.Links
 {
 	public static class LinkConverter
 	{

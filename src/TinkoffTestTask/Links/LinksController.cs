@@ -1,15 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
-using SkillazTestTask.Links.Models;
-using SkillazTestTask.Sequences;
-using SkillazTestTask.Utils.MongoRelatedExtensions;
+using TinkoffTestTask.Links.Models;
+using TinkoffTestTask.Sequences;
+using TinkoffTestTask.Utils.MongoRelatedExtensions;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static SkillazTestTask.Links.Models.ShortenedLinkModel;
+using static TinkoffTestTask.Links.Models.ShortenedLinkModel;
 
-namespace SkillazTestTask.Links
+namespace TinkoffTestTask.Links
 {
 	public class LinksController : Controller
 	{

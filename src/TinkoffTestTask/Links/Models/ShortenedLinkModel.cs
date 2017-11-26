@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SkillazTestTask.Links.Models
+namespace TinkoffTestTask.Links.Models
 {
 	public class ShortenedLinkModel
 	{
