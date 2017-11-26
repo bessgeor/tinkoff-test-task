@@ -99,10 +99,12 @@ namespace TinkoffTestTask.Links
 		{
 			using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
 			using ( IAsyncCursor<ShortenedLinkModel> cursor = await _links
-				.FindAsync( m => true,
-				new FindOptions<ShortenedLinkModel>()
-				{ Skip = from, Limit = count, BatchSize = count },
-				source.Token ).ConfigureAwait( false ) )
+				.FindAsync
+				(
+					m => true,
+					new FindOptions<ShortenedLinkModel> { Skip = from, Limit = count, BatchSize = count },
+					source.Token
+				).ConfigureAwait( false ) )
 			{
 				using ( CancellationTokenSource sourceInner = new CancellationTokenSource( _defaultTimeout ) )
 					await cursor.MoveNextAsync( sourceInner.Token ).ConfigureAwait( false );
