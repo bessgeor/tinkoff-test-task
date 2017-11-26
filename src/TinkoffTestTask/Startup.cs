@@ -15,7 +15,7 @@ namespace TinkoffTestTask
 			services.AddMvc();
 			MongoUrl url = new MongoUrl( Environment.GetEnvironmentVariable( "MONGODB_URI" ) );
 			IMongoClient client = new MongoClient( url );
-			IMongoDatabase database = client.GetDatabase( "heroku_8pg0s8ql" );
+			IMongoDatabase database = client.GetDatabase( "heroku_kq19rxxj" );
 			services.AddSingleton( database );
 
 			Sequence links = new Sequence { Id = "linksSequence" };
