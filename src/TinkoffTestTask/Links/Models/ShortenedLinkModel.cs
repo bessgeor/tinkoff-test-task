@@ -8,6 +8,7 @@ namespace TinkoffTestTask.Links.Models
 		public ShortenedLinkModelId Id { get; set; }
 		public string Key { get; set; }
 		public string Value { get; set; }
+		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 		public IEnumerable<Follow> Follows { get; set; } = Array.Empty<Follow>();
 
 		public class Follow
