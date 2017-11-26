@@ -12,6 +12,7 @@ using static TinkoffTestTask.Links.Models.ShortenedLinkModel;
 
 namespace TinkoffTestTask.Links
 {
+	[Route( "api/links" )]
 	public class LinksController : Controller
 	{
 		private static readonly InsertOneOptions _insertOptions = new InsertOneOptions() { BypassDocumentValidation = false };
