@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace TinkoffTestTask.Links
+namespace TinkoffTestTask.Utils
 {
 	public static class DecBase68Converter
 	{

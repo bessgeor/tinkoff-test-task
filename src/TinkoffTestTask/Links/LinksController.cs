@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using TinkoffTestTask.Links.Models;
 using TinkoffTestTask.Sequences;
-using TinkoffTestTask.Utils.MongoRelatedExtensions;
+using TinkoffTestTask.Utils;
 using System;
 using System.Linq;
 using System.Threading;
