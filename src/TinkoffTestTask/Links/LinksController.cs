@@ -20,12 +20,12 @@ namespace TinkoffTestTask.Links
 		private readonly IMongoCollection<ShortenedLinkModel> _links;
 		private readonly DecBase68Converter _converter;
 		private readonly IAuthTokenProvider _authTokenProvider;
-		private readonly Sequence _linkIdSequence;
+		private readonly ISequenceProvider _sequenceProvider;
 
 		public LinksController( IMongoDatabase db, ISequenceProvider provider, DecBase68Converter converter, IAuthTokenProvider authTokenProvider )
 		{
 			_links = db.GetCollection<ShortenedLinkModel>( "ShortenedLinks" );
-			_linkIdSequence = provider.GetSequenceAsync( "linksSequence" ).GetAwaiter().GetResult();
+			_sequenceProvider = provider;
 			_converter = converter;
 			_authTokenProvider = authTokenProvider;
 		}
@@ -43,13 +43,15 @@ namespace TinkoffTestTask.Links
 
 			async Task<string> CompressInternal()
 			{
+				string userKey = await _authTokenProvider.GetTokenAsync( HttpContext, createIfNotExists: true ).ConfigureAwait( false );
+
 				long newlyGeneratedLinkId;
+				Sequence seq = await _sequenceProvider.GetSequenceAsync( "linksSequence_" + userKey ).ConfigureAwait( false );
 				using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
 				{
-					Sequence seq = await _linkIdSequence.GetNextSequenceValue( source.Token ).ConfigureAwait( false );
+					seq = await seq.GetNextSequenceValue( source.Token ).ConfigureAwait( false );
 					newlyGeneratedLinkId = seq.Value;
 				}
-				string userKey = await _authTokenProvider.GetTokenAsync( HttpContext, createIfNotExists: true ).ConfigureAwait( false );
 				string key = String.Concat( userKey, "~", _converter.GenerateKey( newlyGeneratedLinkId ) );
 				long userId = _converter.RegenerateId( userKey );
 				ShortenedLinkModel model = new ShortenedLinkModel { Id = new ShortenedLinkModelId { LinkId = newlyGeneratedLinkId, UserId = userId }, Key = key, Value = url };
