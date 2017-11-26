@@ -101,7 +101,7 @@ namespace TinkoffTestTask.Links
 		}
 
 		[HttpGet( "list" )]
-		public async Task<ShortenedLinkViewModel[]> List( int from, int count )
+		public async Task<ShortenedLinkViewModel[]> List( int? from = null, int? count = null )
 		{
 			string userKey = await _authTokenProvider.GetTokenAsync( HttpContext, createIfNotExists: false ).ConfigureAwait( false );
 			if ( userKey is null )
