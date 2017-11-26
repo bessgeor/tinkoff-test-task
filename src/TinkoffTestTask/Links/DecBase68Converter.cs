@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TinkoffTestTask.Links
 {
-	public static class LinkConverter
+	public static class DecBase68Converter
 	{
 		private static readonly char[] _alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!$^*-_+".ToCharArray();
 		private static readonly Dictionary<char, long> _alphabetInversion = _alphabet.Select( ( c, i ) => (c, i) ).ToDictionary( t => t.c, t => (long) t.i );

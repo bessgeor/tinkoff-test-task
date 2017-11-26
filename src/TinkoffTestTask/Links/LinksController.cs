@@ -41,7 +41,7 @@ namespace TinkoffTestTask.Links
 					Sequence seq = await _linkIdSequence.GetNextSequenceValue( _links.Database, source.Token ).ConfigureAwait( false );
 					newlyGeneratedId = seq.Value;
 				}
-				string key = LinkConverter.GenerateKey( newlyGeneratedId );
+				string key = DecBase68Converter.GenerateKey( newlyGeneratedId );
 				ShortenedLinkModel model = new ShortenedLinkModel { Id = newlyGeneratedId, Key = key, Value = url };
 				
 				using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
@@ -54,7 +54,7 @@ namespace TinkoffTestTask.Links
 		[HttpGet( "f/{key}")]
 		public Task Decompress( string key )
 		{
-			long id = LinkConverter.RegenerateId( key );
+			long id = DecBase68Converter.RegenerateId( key );
 
 			return DecompressInternal(); // possible (if regeneration throws) async state machine allocation avoidance
 
