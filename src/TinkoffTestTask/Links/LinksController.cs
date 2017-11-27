@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using TinkoffTestTask.Links.Models;
 using TinkoffTestTask.Sequences;
-using TinkoffTestTask.Utils.MongoRelatedExtensions;
+using TinkoffTestTask.Utils;
+using TinkoffTestTask.Auth;
 using System;
 using System.Linq;
 using System.Threading;
@@ -17,10 +18,17 @@ namespace TinkoffTestTask.Links
 		private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds( 1.5d );
 
 		private readonly IMongoCollection<ShortenedLinkModel> _links;
-		private readonly Sequence _linkIdSequence;
+		private readonly DecBase68Converter _converter;
+		private readonly IAuthTokenProvider _authTokenProvider;
+		private readonly ISequenceProvider _sequenceProvider;
 
-		public LinksController( IMongoDatabase db, Sequence linksSequence )
-			=> (_links, _linkIdSequence) = (db.GetCollection<ShortenedLinkModel>( "ShortenedLinks" ), linksSequence);
+		public LinksController( IMongoDatabase db, ISequenceProvider provider, DecBase68Converter converter, IAuthTokenProvider authTokenProvider )
+		{
+			_links = db.GetCollection<ShortenedLinkModel>( "ShortenedLinks" );
+			_sequenceProvider = provider;
+			_converter = converter;
+			_authTokenProvider = authTokenProvider;
+		}
 
 		// should be PUT probably, but GET is much easer to test
 		[HttpGet( "compress/{*url}" )]
@@ -35,14 +43,18 @@ namespace TinkoffTestTask.Links
 
 			async Task<string> CompressInternal()
 			{
-				long newlyGeneratedId;
+				string userKey = await _authTokenProvider.GetTokenAsync( HttpContext, createIfNotExists: true ).ConfigureAwait( false );
+
+				long newlyGeneratedLinkId;
+				Sequence seq = await _sequenceProvider.GetSequenceAsync( "linksSequence_" + userKey ).ConfigureAwait( false );
 				using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
 				{
-					Sequence seq = await _linkIdSequence.GetNextSequenceValue( _links.Database, source.Token ).ConfigureAwait( false );
-					newlyGeneratedId = seq.Value;
+					seq = await seq.GetNextSequenceValue( source.Token ).ConfigureAwait( false );
+					newlyGeneratedLinkId = seq.Value;
 				}
-				string key = LinkConverter.GenerateKey( newlyGeneratedId );
-				ShortenedLinkModel model = new ShortenedLinkModel { Id = newlyGeneratedId, Key = key, Value = url };
+				string key = String.Concat( userKey, "~", _converter.GenerateKey( newlyGeneratedLinkId ) );
+				long userId = _converter.RegenerateId( userKey );
+				ShortenedLinkModel model = new ShortenedLinkModel { Id = new ShortenedLinkModelId { LinkId = newlyGeneratedLinkId, UserId = userId }, Key = key, Value = url };
 				
 				using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
 					await _links.InsertOneAsync( model, _insertOptions, source.Token ).ConfigureAwait( false );
@@ -51,10 +63,12 @@ namespace TinkoffTestTask.Links
 			}
 		}
 
-		[HttpGet( "f/{key}")]
-		public Task Decompress( string key )
+		[HttpGet( "f/{userKey}~{linkKey}")]
+		public Task Decompress( string userKey, string linkKey )
 		{
-			long id = LinkConverter.RegenerateId( key );
+			long userId = _converter.RegenerateId( userKey );
+			long linkId = _converter.RegenerateId( linkKey );
+			ShortenedLinkModelId id = new ShortenedLinkModelId { UserId = userId, LinkId = linkId };
 
 			return DecompressInternal(); // possible (if regeneration throws) async state machine allocation avoidance
 
@@ -89,12 +103,20 @@ namespace TinkoffTestTask.Links
 		[HttpGet( "list" )]
 		public async Task<ShortenedLinkModel[]> List( int from, int count )
 		{
+			string userKey = await _authTokenProvider.GetTokenAsync( HttpContext, createIfNotExists: false ).ConfigureAwait( false );
+			if ( userKey is null )
+				return Array.Empty<ShortenedLinkModel>();
+
+			long userId = _converter.RegenerateId( userKey );
+
 			using ( CancellationTokenSource source = new CancellationTokenSource( _defaultTimeout ) )
 			using ( IAsyncCursor<ShortenedLinkModel> cursor = await _links
-				.FindAsync( m => true,
-				new FindOptions<ShortenedLinkModel>()
-				{ Skip = from, Limit = count, BatchSize = count },
-				source.Token ).ConfigureAwait( false ) )
+				.FindAsync
+				(
+					m => m.Id.UserId == userId,
+					new FindOptions<ShortenedLinkModel> { Skip = from, Limit = count, BatchSize = count },
+					source.Token
+				).ConfigureAwait( false ) )
 			{
 				using ( CancellationTokenSource sourceInner = new CancellationTokenSource( _defaultTimeout ) )
 					await cursor.MoveNextAsync( sourceInner.Token ).ConfigureAwait( false );
